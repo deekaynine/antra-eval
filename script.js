@@ -78,6 +78,7 @@ class View {
 
   sortColumn = (sortController, sortController2) => {
     this.table.addEventListener("click", (e) => {
+      console.log(this.isFilteredOrNot);
       if (e.target.id == "nameColumn" && this.isFilteredOrNot == false) {
         sortController();
       } else if (e.target.id == "nameColumn" && this.isFilteredOrNot == true) {
@@ -107,17 +108,14 @@ class Controller {
 
   addItem = (name, mobile, email) => {
     const contact = {
-      id:
-        this.model.contacts.length > 0
-          ? this.model.contacts[this.model.contacts.length - 1].id + 1
-          : 0,
+      id: this.model.contacts.length > 0 ? this.model.contacts.length : 0,
       name: name,
       mobile: mobile,
       email: email,
     };
     this.model.contacts.push(contact);
-    console.log(this.model.contacts);
     this.view.renderContacts(this.model.contacts);
+    console.log(this.model.contacts);
   };
 
   searchItems = (input) => {
@@ -135,6 +133,7 @@ class Controller {
   };
 
   sortItems = () => {
+    console.log("sort 1");
     let sorted = [];
     if (!this.model.sorted) {
       sorted = this.model.contacts.sort((a, b) => a.name.localeCompare(b.name));
@@ -144,11 +143,12 @@ class Controller {
         .reverse();
     }
     this.model.sorted = !this.model.sorted;
-    console.log(this.model.sorted);
+
     this.view.renderContacts(sorted);
   };
 
   sortFilteredItems = () => {
+    console.log("sort 2");
     let sorted = [];
     if (!this.model.sorted) {
       sorted = this.model.filteredContacts.sort((a, b) =>
@@ -160,7 +160,6 @@ class Controller {
         .reverse();
     }
     this.model.sorted = !this.model.sorted;
-    console.log(this.model.sorted);
     this.view.renderContacts(sorted);
   };
 }
