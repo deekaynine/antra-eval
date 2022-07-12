@@ -107,12 +107,16 @@ class Controller {
 
   addItem = (name, mobile, email) => {
     const contact = {
-      id: this.model.contacts.length > 0 ? this.model.contacts[0].id + 1 : 0,
+      id:
+        this.model.contacts.length > 0
+          ? this.model.contacts[this.model.contacts.length - 1].id + 1
+          : 0,
       name: name,
       mobile: mobile,
       email: email,
     };
     this.model.contacts.push(contact);
+    console.log(this.model.contacts);
     this.view.renderContacts(this.model.contacts);
   };
 
