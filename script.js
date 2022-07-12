@@ -1,74 +1,87 @@
-import { Api } from "./api.js";
-
 //only holds the state and data
 class Model {
   constructor() {
-    this.todos = [];
+    this.contacts = [];
+    this.filteredContacts = [];
+    this.sorted = false;
   }
 }
 
 //handles the DOM and helps dispatches the controller functions
 class View {
   constructor() {
-    this.form = document.querySelector(".todo__form");
-    this.todoInput = document.querySelector("#newtodo");
-    this.pendingList = document.querySelector(".pending__list");
-    this.completedList = document.querySelector(".completed__list");
+    this.form = document.querySelector(".contact__form");
+    this.name = document.querySelector("#name");
+    this.mobile = document.querySelector("#mobile");
+    this.email = document.querySelector("#email");
+    this.search = document.querySelector("#search");
+    this.table = document.querySelector("#summaryTable");
+    this.tableName = document.querySelector("#nameColumn");
+    this.isFilteredOrNot = false;
+
+    this.contactRows = document.querySelector("tbody");
   }
 
-  renderTodos(todos) {
-    if (todos.length === 0) {
-      this.pendingList.innerHTML = "";
-      this.completedList.innerHTML = "";
+  renderContacts(contacts) {
+    if (contacts.length === 0) {
+      this.contactRows.innerHTML = "";
+
       const text = document.createElement("p");
-      text.textContent = "There are no tasks at this moment.";
-      this.pendingList.append(text);
+      text.textContent = "There are no contacts at this moment.";
+      this.contactRows.append(text);
     } else {
-      this.pendingList.innerHTML = "";
+      this.contactRows.innerHTML = "";
 
-      todos.forEach((todo) => {
-        this.pendingList.innerHTML += `
-        <li class="todo" id=${todo.id}>
-        
-        <p class="">${todo.id}. ${todo.title}</p>
-
-        <button class="checkbtn">check</button>
-        <button class="deletebtn">delete</button>
-        <button class="editbtn">edit</button>
-        </li>`;
+      contacts.forEach((contact) => {
+        this.contactRows.innerHTML += `
+        <tr>
+              <td>${contact.name}</td>
+              <td>${contact.mobile}</td>
+              <td>${contact.email}</td>
+            </tr>`;
       });
     }
   }
 
-  addTodos = (addcontroller) => {
+  addContact = (addcontroller) => {
+    const el = document.querySelector("#error");
     this.form.addEventListener("submit", (e) => {
       e.preventDefault();
 
-      addcontroller(this.todoInput.value);
-      this.todoInput.value = "";
-    });
-  };
+      let nameValidator = /^[a-zA-Z ]*$/;
 
-  deleteTodo = (deletecontroller) => {
-    this.pendingList.addEventListener("click", (e) => {
-      if (e.target.className === "deletebtn") {
-        deletecontroller(e.target.parentElement.id);
+      if (
+        this.name.value.match(nameValidator) &&
+        this.name.value.length !== "" &&
+        this.mobile.value !== "" &&
+        this.mobile.value.length <= 10 &&
+        this.email.value.length !== 0
+      ) {
+        el.classList.add("dn");
+        addcontroller(this.name.value, this.mobile.value, this.email.value);
+        this.name.value = "";
+        this.mobile.value = "";
+        this.email.value = "";
+        return true;
+      } else {
+        el.classList.remove("dn");
+        return false;
       }
     });
   };
 
-  editTodo = (editcontroller) => {
-    this.pendingList.addEventListener("click", (e) => {
-      if (e.target.className === "editbtn") {
-        deletecontroller(e.target.parentElement.id);
-      }
+  mobileSearch = (searchController) => {
+    this.search.addEventListener("input", (e) => {
+      searchController(e.target.value);
     });
   };
 
-  checkTodo = (checkcontroller) => {
-    this.pendingList.addEventListener("click", (e) => {
-      if (e.target.className === "togglebtn") {
-        checkcontroller(e.target.parentElement.id);
+  sortColumn = (sortController, sortController2) => {
+    this.table.addEventListener("click", (e) => {
+      if (e.target.id == "nameColumn" && this.isFilteredOrNot == false) {
+        sortController();
+      } else if (e.target.id == "nameColumn" && this.isFilteredOrNot == true) {
+        sortController2();
       }
     });
   };
@@ -81,54 +94,70 @@ class Controller {
     this.model = model;
     this.view = view;
 
-    this.view.addTodos(this.addItem);
-    this.view.deleteTodo(this.deleteItem);
-    this.view.checkTodo(this.checkItem);
+    this.view.addContact(this.addItem);
+    this.view.mobileSearch(this.searchItems);
+    this.view.sortColumn(this.sortItems, this.sortFilteredItems);
 
-    this.init(this.model.todos);
+    this.init(this.model.contacts);
   }
 
-  init = async () => {
-    await Api.getTodos().then((data) => {
-      console.log(data);
-      this.model.todos = [...data.reverse()];
-    });
-    this.view.renderTodos(this.model.todos);
+  init = () => {
+    this.view.renderContacts(this.model.contacts);
   };
 
-  addItem = (val) => {
-    const todo = {
-      id: this.model.todos.length > 0 ? this.model.todos[0].id + 1 : 0,
-      title: val,
-      completed: false,
+  addItem = (name, mobile, email) => {
+    const contact = {
+      id: this.model.contacts.length > 0 ? this.model.contacts[0].id + 1 : 0,
+      name: name,
+      mobile: mobile,
+      email: email,
     };
-    this.model.todos.unshift(todo);
-    this.view.renderTodos(this.model.todos);
+    this.model.contacts.push(contact);
+    this.view.renderContacts(this.model.contacts);
   };
 
-  // editItem = (id, data) => {
-  //   this.model.todos.map((todo) => {
-  //     todo.id === id ? data : todo;
-  //   });
-  //   this.init(this.model.todos);
-  // };
-
-  deleteItem = (id) => {
-    this.model.todos = this.model.todos.filter((todo) => {
-      return Number(todo.id) !== Number(id);
-    });
-
-    this.view.renderTodos(this.model.todos);
+  searchItems = (input) => {
+    this.view.isFilteredOrNot = true;
+    const el = document.querySelector("#noResult");
+    this.model.filteredContacts = this.model.contacts.filter((contact) =>
+      contact.mobile.includes(input)
+    );
+    if (this.model.filteredContacts.length === 0) {
+      el.classList.remove("dn");
+    } else {
+      el.classList.add("dn");
+    }
+    this.view.renderContacts(this.model.filteredContacts);
   };
 
-  checkItem = (id) => {
-    this.model.todos = this.model.todos.map((todo) => {
-      return todo.id == id
-        ? { id: todo.id, title: todo.title, completed: !todo.completed }
-        : todo;
-    });
+  sortItems = () => {
+    let sorted = [];
+    if (!this.model.sorted) {
+      sorted = this.model.contacts.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (this.model.sorted) {
+      sorted = this.model.contacts
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .reverse();
+    }
+    this.model.sorted = !this.model.sorted;
+    console.log(this.model.sorted);
+    this.view.renderContacts(sorted);
+  };
 
-    this.view.renderTodos(this.model.todos);
+  sortFilteredItems = () => {
+    let sorted = [];
+    if (!this.model.sorted) {
+      sorted = this.model.filteredContacts.sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+    } else if (this.model.sorted) {
+      sorted = this.model.filteredContacts
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .reverse();
+    }
+    this.model.sorted = !this.model.sorted;
+    console.log(this.model.sorted);
+    this.view.renderContacts(sorted);
   };
 }
 
