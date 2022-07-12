@@ -4,6 +4,7 @@ class Model {
     this.contacts = [];
     this.filteredContacts = [];
     this.sorted = false;
+    this.filterOrNot = false;
   }
 }
 
@@ -17,7 +18,6 @@ class View {
     this.search = document.querySelector("#search");
     this.table = document.querySelector("#summaryTable");
     this.tableName = document.querySelector("#nameColumn");
-    this.isFilteredOrNot = false;
 
     this.contactRows = document.querySelector("tbody");
   }
@@ -76,14 +76,9 @@ class View {
     });
   };
 
-  sortColumn = (sortController, sortController2) => {
+  sortColumn = (sortController) => {
     this.table.addEventListener("click", (e) => {
-      console.log(this.isFilteredOrNot);
-      if (e.target.id == "nameColumn" && this.isFilteredOrNot == false) {
-        sortController();
-      } else if (e.target.id == "nameColumn" && this.isFilteredOrNot == true) {
-        sortController2();
-      }
+      sortController(e.target);
     });
   };
 }
@@ -97,7 +92,7 @@ class Controller {
 
     this.view.addContact(this.addItem);
     this.view.mobileSearch(this.searchItems);
-    this.view.sortColumn(this.sortItems, this.sortFilteredItems);
+    this.view.sortColumn(this.sortItems);
 
     this.init(this.model.contacts);
   }
@@ -119,8 +114,15 @@ class Controller {
   };
 
   searchItems = (input) => {
-    this.view.isFilteredOrNot = true;
     const el = document.querySelector("#noResult");
+
+    if (input) {
+      this.model.filterOrNot = true;
+    } else {
+      this.model.filterOrNot = false;
+    }
+
+    console.log(this.model.filterOrNot);
     this.model.filteredContacts = this.model.contacts.filter((contact) =>
       contact.mobile.includes(input)
     );
@@ -132,34 +134,35 @@ class Controller {
     this.view.renderContacts(this.model.filteredContacts);
   };
 
-  sortItems = () => {
-    console.log("sort 1");
+  sortItems = (target) => {
+    console.log(target);
     let sorted = [];
-    if (!this.model.sorted) {
-      sorted = this.model.contacts.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (this.model.sorted) {
-      sorted = this.model.contacts
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .reverse();
+    if (target.id == "nameColumn" && this.model.filterOrNot == false) {
+      console.log("sort 1");
+      if (!this.model.sorted) {
+        sorted = this.model.contacts.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+      } else if (this.model.sorted) {
+        sorted = this.model.contacts
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .reverse();
+      }
+    } else if (target.id == "nameColumn" && this.model.filterOrNot == true) {
+      console.log("sort 2");
+      if (!this.model.sorted) {
+        sorted = this.model.filteredContacts.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+      } else if (this.model.sorted) {
+        sorted = this.model.filteredContacts
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .reverse();
+      }
     }
+
     this.model.sorted = !this.model.sorted;
 
-    this.view.renderContacts(sorted);
-  };
-
-  sortFilteredItems = () => {
-    console.log("sort 2");
-    let sorted = [];
-    if (!this.model.sorted) {
-      sorted = this.model.filteredContacts.sort((a, b) =>
-        a.name.localeCompare(b.name)
-      );
-    } else if (this.model.sorted) {
-      sorted = this.model.filteredContacts
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .reverse();
-    }
-    this.model.sorted = !this.model.sorted;
     this.view.renderContacts(sorted);
   };
 }
