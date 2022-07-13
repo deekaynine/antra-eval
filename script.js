@@ -1,7 +1,26 @@
 //only holds the state and data
 class Model {
   constructor() {
-    this.contacts = [];
+    this.contacts = [
+      {
+        id: 0,
+        name: "stacy",
+        mobile: "18134545",
+        email: "stacy123@gmail.com",
+      },
+      {
+        id: 1,
+        name: "bob",
+        mobile: "1813431",
+        email: "bob123@gmail.com",
+      },
+      {
+        id: 2,
+        name: "smurda",
+        mobile: "12131",
+        email: "smurda123@gmail.com",
+      },
+    ];
     this.filteredContacts = [];
     this.sorted = false;
     this.filterOrNot = false;

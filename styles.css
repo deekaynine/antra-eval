@@ -118,8 +118,9 @@ input:focus {
   padding-top: 10px;
 }
 .contactSummary {
-  padding-top: 10px;
-  margin-inline: 30rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 table,
 th,
