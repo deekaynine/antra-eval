@@ -60,8 +60,13 @@ input:focus {
 .marginT40 {
   margin-top: 40px;
 }
-.testCenter {
+.textCenter {
   text-align: center;
+}
+.flexCenter {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .margin20 {
   margin: 20px;
@@ -114,6 +119,7 @@ input:focus {
 }
 .contactSummary {
   padding-top: 10px;
+  margin-inline: 30rem;
 }
 table,
 th,
