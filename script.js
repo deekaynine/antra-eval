@@ -77,8 +77,12 @@ class View {
   };
 
   sortColumn = (sortController) => {
-    this.table.addEventListener("click", (e) => {
-      sortController(e.target);
+    this.tableName.addEventListener("click", (e) => {
+      if ((e.target.id = "nameColumn")) {
+        sortController(e.target);
+      } else {
+        console.log("hi");
+      }
     });
   };
 }
@@ -126,6 +130,7 @@ class Controller {
     this.model.filteredContacts = this.model.contacts.filter((contact) =>
       contact.mobile.includes(input)
     );
+
     if (this.model.filteredContacts.length === 0) {
       el.classList.remove("dn");
     } else {
